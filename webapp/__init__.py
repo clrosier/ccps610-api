@@ -12,6 +12,7 @@ cursor = DbOps.connect('')
 
 from webapp.routes.login_routes import *
 from webapp.routes.product_routes import *
+from webapp.routes.tax_routes import *
 
 if __name__=="__main__":
     app.run()

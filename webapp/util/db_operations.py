@@ -95,6 +95,7 @@ class DbOps:
         __tablename__ = "BB_PRODUCT"
 
         try:
+            # Called stored proceduce PROD_ADD_SP to add a new product
             output = cursor.callproc("PROD_ADD_SP",
                                     [pname, pdesc, pimg, pprice, pactive])
             print(output)
@@ -126,3 +127,62 @@ class DbOps:
             }
 
             return response_object
+
+
+    def calculate_tax(self, state, subtotal):
+
+        """
+        Calculates the tax given the state and the subtotal
+
+        :param: state (str): The state from which the product is purchased
+        :param: subtotal (float): The subtotal of the product purchase
+
+        :returns: The tax amount for the purchase
+        """
+        from webapp import cursor
+
+        # Table name within the database
+        # __tablename__ = "BB_TAX"
+
+        try:
+            # Called stored proceduce PROD_ADD_SP to add a new product
+            output = cursor.callproc("TAX_COST_SP",
+                                    [state, subtotal])
+
+            response_object = {
+                "tax_amount": output,
+                "changed": True
+            }
+
+            return response_object
+        except cx_Oracle.DatabaseError as e:
+            msg = 'Something went wrong.  Check it out: \n %s' % e
+            response_object = {
+                "message": msg,
+                "changed": False
+            }
+
+            return response_object
+        
+        
+    def update_order_status(self, basket_id, date, shipper, shipnum):
+        """
+        Updates the status of an order
+
+        :param: basket_id (str): The state from which the product is purchased
+        :param: date (date): The date that the order was shipped
+        :param: shipper (str): The company that is shipping the order
+        :param: shipnum (str): The tracking number of the shipment
+
+        :returns: True (bool): if successfully updated order status
+        :returns: False (bool): if unsuccessfully updated order status
+        """
+        from webapp import cursor
+
+        # Table name within the database
+        # __tablename__ = "BB_TAX"
+
+        try:
+            pass
+        except cx_Oracle.DatabaseError as e:
+            pass
