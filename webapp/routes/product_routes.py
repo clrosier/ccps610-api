@@ -23,6 +23,7 @@ class EditProduct(Resource):
         else:
             return response['message'], 500
 
+
 @api.route('/add')
 class AddProduct(Resource):
 

@@ -2,7 +2,7 @@ from webapp import api
 from flask_restplus import Resource, fields
 
 edit_product_model = api.model('Edit Product', {
-                            'pkey': fields.String(required=True, description='The product key'),
+                            'pkey': fields.Integer(required=True, description='The product key'),
                             'new_desc': fields.String(required=True, description='New description')})
 
 add_product_model = api.model('Add Product', {

@@ -36,7 +36,7 @@ class DbOps:
         """
         Edits the description of a product given it's product key and the new description
 
-        :param: pkey (str): The product's identifier in the table
+        :param: pkey (int): The product's identifier in the table
         :param: new_desc (str): The new description to replace the old one with
 
         :returns: response_object (dict): An object containing a dictionary with the products attributes / an error message as well as a 'changed' (bool) status
@@ -147,10 +147,10 @@ class DbOps:
         try:
             # Called stored proceduce PROD_ADD_SP to add a new product
             output = cursor.callproc("TAX_COST_SP",
-                                    [state, subtotal])
+                                    [state, subtotal, 0])
 
             response_object = {
-                "tax_amount": output,
+                "tax_amount": "{:.2f}".format(output[2]),
                 "changed": True
             }
 
@@ -164,12 +164,12 @@ class DbOps:
 
             return response_object
         
-        
+
     def update_order_status(self, basket_id, date, shipper, shipnum):
         """
         Updates the status of an order
 
-        :param: basket_id (str): The state from which the product is purchased
+        :param: basket_id (int): The state from which the product is purchased
         :param: date (date): The date that the order was shipped
         :param: shipper (str): The company that is shipping the order
         :param: shipnum (str): The tracking number of the shipment
@@ -179,10 +179,104 @@ class DbOps:
         """
         from webapp import cursor
 
-        # Table name within the database
-        # __tablename__ = "BB_TAX"
+        try:
+            output = cursor.callproc("STATUS_SHIP_SP",
+                                    [basket_id, date, shipper, shipnum])
+
+            shipping_info = {
+                "basket_id": basket_id,
+                "date": date,
+                "shipper": shipper,
+                "shipping_num": shipnum,
+                "is_shipped": True
+            }
+
+            response_object = {
+                "shipped": shipping_info,
+                "changed": True
+            }
+
+            return response_object
+        except cx_Oracle.DatabaseError as e:
+            msg = 'Something went wrong.  Check it out: \n %s' % e
+            response_object = {
+                "message": msg,
+                "changed": False
+            }
+
+            return response_object
+
+
+    def add_item_to_basket(self, basket_id, product_id, price, quantity, size_code, form_code):
+        """
+        Adds an item to the user's basket
+
+        :param: basket_id (int): The id of the user's basket
+        :param: product_id (int): The id of the product
+        :param: price (float): The price of the item
+        :param: quantity (int): The amount of the product
+        :param: size_code (int): The size code option
+        :param: form_code (int): The form code option
+
+        :returns: response_object (dict): An object containing a dictionary with the products attributes / an error message as well as a 'changed' (bool) status
+        """
+        from webapp import cursor
 
         try:
-            pass
+            output = cursor.callproc("BASKET_ADD_SP",
+                                    [basket_id, product_id, price, quantity, size_code, form_code])
+
+            response_object = {
+                "message": "Successfully added item to basket.",
+                "changed": True
+            }
+
+            return response_object
         except cx_Oracle.DatabaseError as e:
-            pass
+            msg = 'Something went wrong.  Check it out: \n %s' % e
+            response_object = {
+                "message": msg,
+                "changed": False
+            }
+
+            return response_object
+
+
+    def check_sale(self, date, product_id):
+        """
+        Adds an item to the user's basket
+
+        :param: date (date): The date to check whether it's within the sale date
+        :param: product_id (int): The id of the product
+
+        :returns: response_object (dict): An object containing a dictionary with the products attributes / an error message as well as a 'changed' (bool) status
+        """
+        
+        from webapp import cursor
+
+        # Table name within the database
+        # __tablename__ = "BB_BASKETITEM"
+
+        try:
+            output = cursor.callfunc("CK_SALE_SF", str,
+                                    [date, product_id])
+
+            on_sale = False
+            if output == 'ON SALE!':
+                on_sale = True
+
+            response_object = {
+                "message": output,
+                "on_sale": on_sale,
+                "changed": True
+            }
+
+            return response_object
+        except cx_Oracle.DatabaseError as e:
+            print('error')
+            msg = 'Something went wrong.  Check it out: \n %s' % e
+            response_object = {
+                "message": msg,
+                "changed": False
+            }
+            return response_object
