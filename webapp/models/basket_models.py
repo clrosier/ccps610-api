@@ -8,3 +8,6 @@ add_to_basket = api.model('Add To Basket', {
                             'quantity': fields.Integer(required=True, description='The amount of the product'),
                             'size_code': fields.Integer(required=True, description='The size code option'),
                             'form_code': fields.Integer(required=True, description='The form code option')})
+
+items_in_basket = api.model('Items in Basket', {
+                            'basket_id': fields.Integer(required=True, description='The id of the order')})

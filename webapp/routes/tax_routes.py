@@ -21,4 +21,5 @@ class CalculateTax(Resource):
         if response['changed']:
             return response['tax_amount'], 200
         else:
+            print(response['message'])
             return response['message'], 500

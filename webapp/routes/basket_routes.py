@@ -22,3 +22,17 @@ class AddToBasket(Resource):
             return response['message'], 200
         else:
             return response['message'], 500
+
+
+@api.route('/get_basket_items')
+class AddToBasket(Resource):
+
+
+    @api.expect(basket_models.items_in_basket)
+    def post(self):
+        data = api.payload
+        response = DbOps.get_items_in_basket('', data['basket_id'])
+        if response['success']:
+            return response['products'], 200
+        else:
+            return response['message'], 500

@@ -280,3 +280,145 @@ class DbOps:
                 "changed": False
             }
             return response_object
+
+    
+    def get_all_products(self):
+
+        from webapp import cursor
+        # Table name within the database
+        __tablename__ = "BB_PRODUCT"
+
+        try:
+            # Form an SQL query to get a description of the item we've updated and execute the SQL query
+            sql = "SELECT * FROM %s ORDER BY IDPRODUCT" % __tablename__
+            products = cursor.execute(sql).fetchall()
+            product_list = []
+            for product in products:
+                pid = product[0]
+                name = product[1]
+                desc = product[2]
+                img_loc = product[3]
+                price = product[4]
+                sale_price = product[7] if product[7] != None else None
+                sale_start = str(product[5]) if product[7] != None else None
+                sale_end = str(product[6]) if product[7] != None else None
+
+                product_list.append({"pid": pid,
+                                     "name": name,
+                                     "desc": desc,
+                                     "img_loc": img_loc,
+                                     "price": price,
+                                     "sale_price": sale_price,
+                                     "sale_start": sale_start,
+                                     "sale_end": sale_end
+                                     })
+            
+            response_object = {
+                "products": product_list,
+                "success": True
+            }
+
+            return response_object
+
+        except cx_Oracle.DatabaseError as e:
+            msg = 'Something went wrong.  Check it out: \n %s' % e
+            response_object = {
+                "message": msg,
+                "success": False
+            }
+
+            return response_object
+
+
+    def get_product(self, product_id):
+        from webapp import cursor
+
+        # Table name within the database
+        __tablename__ = "BB_PRODUCT"
+
+        try:
+            # Form an SQL query to get a description of the item we've updated and execute the SQL query
+            sql = "SELECT * FROM %s WHERE IDPRODUCT='%s'" % (__tablename__, product_id)
+            product_name = cursor.execute(sql).fetchone()
+
+            # Form a dict/JSON object to return to the user
+            product_object = {
+                "product_name": product_name[1],
+                "product_desc": product_name[2],
+                "product_img_file": product_name[3],
+                "product_price": product_name[4]
+            }
+
+            response_object = {
+                "product_object": product_object,
+                "success": True
+            }
+
+            return response_object
+        except cx_Oracle.DatabaseError as e:
+            msg = 'Something went wrong.  Check it out: \n %s' % e
+            response_object = {
+                "message": msg,
+                "success": False
+            }
+
+            return response_object
+
+
+    def check_stock(self, basket_id):
+         
+        from webapp import cursor
+
+        try:
+            output = cursor.callproc("STOCK_CHECK",
+                                    [basket_id])
+
+            print(output)
+
+            response_object = {
+                "in_stock": True,
+                "success": True
+            }
+
+            return response_object
+        except cx_Oracle.DatabaseError as e:
+            msg = 'Something went wrong.  Check it out: \n %s' % e
+            response_object = {
+                "message": msg,
+                "success": False
+            }
+
+            return response_object
+
+
+    def get_items_in_basket(self, basket_id):
+         
+        from webapp import cursor
+        # Table name within the database
+        __tablename__ = "BB_BASKETITEM"
+
+        try:
+            # Form an SQL query to get a description of the item we've updated and execute the SQL query
+            sql = "SELECT * FROM %s WHERE IDBASKET=%s" % (__tablename__, basket_id)
+            products = cursor.execute(sql).fetchall()
+            product_list = []
+            for product in products:
+                pid = product[1]
+
+                product_list.append(pid)
+            
+            response_object = {
+                "products": product_list,
+                "success": True
+            }
+
+            return response_object
+
+        except cx_Oracle.DatabaseError as e:
+            msg = 'Something went wrong.  Check it out: \n %s' % e
+            response_object = {
+                "message": msg,
+                "success": False
+            }
+
+            return response_object
